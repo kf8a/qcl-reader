@@ -3,11 +3,13 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"fmt"
 	zmq "github.com/pebbe/zmq4"
 	serial "github.com/tarm/goserial"
 	"io"
 	"log"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -23,6 +25,7 @@ type Datum struct {
 	CH4_ppm     float64
 	H2O_ppm     float64
 	N2O_ppm     float64
+	CO2_ppm     float64
 	CH4_dry_ppm float64
 	N2O_dry_ppm float64
 }
@@ -47,6 +50,27 @@ func (qcl QCL) parseTime(value string) time.Time {
 	} else {
 		return datetime
 	}
+}
+
+func (qcl QCL) RandomSample() string {
+	time.Sleep(1 * time.Second)
+
+	datum := Datum{
+		ObsTime:     time.Now(),
+		Time:        time.Now(),
+		CH4_ppm:     rand.Float64(),
+		H2O_ppm:     rand.Float64(),
+		N2O_ppm:     rand.Float64(),
+		CO2_ppm:     rand.Float64(),
+		N2O_dry_ppm: rand.Float64(),
+		CH4_dry_ppm: rand.Float64(),
+	}
+	b, err := json.Marshal(datum)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	return string(b)
 }
 
 func (qcl QCL) Sample() string {
@@ -75,8 +99,6 @@ func (qcl QCL) Sample() string {
 		fmt.Println("error:", err)
 	}
 
-	//	fmt.Println(b)
-
 	return string(b)
 }
 
@@ -85,6 +107,10 @@ func (qcl QCL) parse(data string) string {
 }
 
 func main() {
+	var test bool
+	flag.BoolVar(&test, "test", false, "use a random number generator instead of a live feed")
+	flag.Parse()
+
 	qcl := QCL{}
 	socket, err := zmq.NewSocket(zmq.PUB)
 	if err != nil {
@@ -92,8 +118,13 @@ func main() {
 	}
 	defer socket.Close()
 	socket.Bind("tcp://*:5550")
+
+	sampler := qcl.Sample
+	if test {
+		sampler = qcl.RandomSample
+	}
 	for {
-		sample := qcl.Sample()
+		sample := sampler()
 		log.Print(sample)
 		socket.Send(sample, 0)
 	}
