@@ -91,6 +91,7 @@ func (qcl QCL) Sample() string {
 		CH4_ppm:     qcl.parseFloat(line[1]),
 		H2O_ppm:     qcl.parseFloat(line[3]),
 		N2O_ppm:     qcl.parseFloat(line[5]),
+		CO2_ppm:     qcl.parseFloat("0"),
 		N2O_dry_ppm: qcl.parseFloat(line[7]),
 		CH4_dry_ppm: qcl.parseFloat(line[9]),
 	}
@@ -125,7 +126,7 @@ func main() {
 	}
 	for {
 		sample := sampler()
-		log.Print(sample)
+		fmt.Println(sample)
 		socket.Send(sample, 0)
 	}
 }
