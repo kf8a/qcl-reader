@@ -78,12 +78,14 @@ func (qcl QCL) Sample() string {
 	port, err := serial.OpenPort(&c)
 	qcl.port = port
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return ""
 	}
 	reader := csv.NewReader(qcl.port)
 	line, err := reader.Read()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return ""
 	}
 	datum := Datum{
 		ObsTime:     time.Now(),
