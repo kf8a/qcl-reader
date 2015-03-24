@@ -100,6 +100,7 @@ func (qcl QCL) Sample() string {
 	b, err := json.Marshal(datum)
 	if err != nil {
 		fmt.Println("error:", err)
+		return ""
 	}
 
 	return string(b)
