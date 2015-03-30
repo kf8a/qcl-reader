@@ -1,11 +1,8 @@
-package main
+package qclreader
 
 import (
 	"encoding/csv"
 	"encoding/json"
-	"flag"
-	"fmt"
-	zmq "github.com/pebbe/zmq4"
 	serial "github.com/tarm/goserial"
 	"io"
 	"log"
@@ -67,10 +64,20 @@ func (qcl QCL) RandomSample() string {
 	}
 	b, err := json.Marshal(datum)
 	if err != nil {
-		fmt.Println("error:", err)
+		log.Println("error:", err)
 	}
 
 	return string(b)
+}
+
+func (qcl QCL) Sampler(test bool, cs chan string) {
+	sampler := qcl.Sample
+	if test {
+		sampler = qcl.RandomSample
+	}
+	for {
+		cs <- sampler()
+	}
 }
 
 func (qcl QCL) Sample() string {
@@ -99,7 +106,7 @@ func (qcl QCL) Sample() string {
 	}
 	b, err := json.Marshal(datum)
 	if err != nil {
-		fmt.Println("error:", err)
+		log.Println("error:", err)
 		return ""
 	}
 
@@ -108,28 +115,4 @@ func (qcl QCL) Sample() string {
 
 func (qcl QCL) parse(data string) string {
 	return data
-}
-
-func main() {
-	var test bool
-	flag.BoolVar(&test, "test", false, "use a random number generator instead of a live feed")
-	flag.Parse()
-
-	qcl := QCL{}
-	socket, err := zmq.NewSocket(zmq.PUB)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer socket.Close()
-	socket.Bind("tcp://*:5550")
-
-	sampler := qcl.Sample
-	if test {
-		sampler = qcl.RandomSample
-	}
-	for {
-		sample := sampler()
-		fmt.Println(sample)
-		socket.Send(sample, 0)
-	}
 }
