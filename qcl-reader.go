@@ -120,6 +120,7 @@ func (qcl QCL) RealSampler(cs chan string) {
 
 			cs <- string(b)
 		}
+		time.Sleep(2 * time.Second)
 	}
 }
 
