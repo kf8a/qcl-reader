@@ -49,68 +49,78 @@ func (qcl QCL) parseTime(value string) time.Time {
 	}
 }
 
-func (qcl QCL) RandomSample() string {
-	time.Sleep(1 * time.Second)
+func (qcl QCL) RandomSample(cs chan string) {
+	for {
+		time.Sleep(1 * time.Second)
 
-	datum := Datum{
-		ObsTime:     time.Now(),
-		Time:        time.Now(),
-		CH4_ppm:     rand.Float64(),
-		H2O_ppm:     rand.Float64(),
-		N2O_ppm:     rand.Float64(),
-		CO2_ppm:     rand.Float64(),
-		N2O_dry_ppm: rand.Float64(),
-		CH4_dry_ppm: rand.Float64(),
-	}
-	b, err := json.Marshal(datum)
-	if err != nil {
-		log.Println("error:", err)
-	}
+		datum := Datum{
+			ObsTime:     time.Now(),
+			Time:        time.Now(),
+			CH4_ppm:     rand.Float64(),
+			H2O_ppm:     rand.Float64(),
+			N2O_ppm:     rand.Float64(),
+			CO2_ppm:     rand.Float64(),
+			N2O_dry_ppm: rand.Float64(),
+			CH4_dry_ppm: rand.Float64(),
+		}
+		b, err := json.Marshal(datum)
+		if err != nil {
+			log.Println("error:", err)
+		}
 
-	return string(b)
+		cs <- string(b)
+	}
 }
 
 func (qcl QCL) Sampler(test bool, cs chan string) {
-	sampler := qcl.Sample
 	if test {
-		sampler = qcl.RandomSample
-	}
-	for {
-		cs <- sampler()
+		go qcl.RandomSample(cs)
+	} else {
+		go qcl.RealSampler(cs)
 	}
 }
 
-func (qcl QCL) Sample() string {
+func (qcl QCL) RealSampler(cs chan string) {
 	c := serial.Config{Name: "/dev/ttyUSB0", Baud: 9600}
-	port, err := serial.OpenPort(&c)
-	qcl.port = port
-	if err != nil {
-		log.Println(err)
-		return ""
-	}
-	reader := csv.NewReader(qcl.port)
-	line, err := reader.Read()
-	if err != nil {
-		log.Println(err)
-		return ""
-	}
-	datum := Datum{
-		ObsTime:     time.Now(),
-		Time:        qcl.parseTime(line[0]),
-		CH4_ppm:     qcl.parseFloat(line[1]),
-		H2O_ppm:     qcl.parseFloat(line[3]),
-		N2O_ppm:     qcl.parseFloat(line[5]),
-		CO2_ppm:     qcl.parseFloat("0"),
-		N2O_dry_ppm: qcl.parseFloat(line[7]),
-		CH4_dry_ppm: qcl.parseFloat(line[9]),
-	}
-	b, err := json.Marshal(datum)
-	if err != nil {
-		log.Println("error:", err)
-		return ""
-	}
 
-	return string(b)
+	for {
+		port, err := serial.OpenPort(&c)
+		defer port.Close()
+
+		qcl.port = port
+		if err != nil {
+			log.Println(err)
+			port.Close()
+			continue
+		}
+		for {
+			reader := csv.NewReader(qcl.port)
+			line, err := reader.Read()
+			if err != nil {
+				log.Println(err)
+				port.Close()
+				break
+			}
+			datum := Datum{
+				ObsTime:     time.Now(),
+				Time:        qcl.parseTime(line[0]),
+				CH4_ppm:     qcl.parseFloat(line[1]),
+				H2O_ppm:     qcl.parseFloat(line[3]),
+				N2O_ppm:     qcl.parseFloat(line[5]),
+				CO2_ppm:     qcl.parseFloat("0"),
+				N2O_dry_ppm: qcl.parseFloat(line[7]),
+				CH4_dry_ppm: qcl.parseFloat(line[9]),
+			}
+			b, err := json.Marshal(datum)
+			if err != nil {
+				log.Println("error:", err)
+				port.Close()
+				break
+			}
+
+			cs <- string(b)
+		}
+	}
 }
 
 func (qcl QCL) parse(data string) string {

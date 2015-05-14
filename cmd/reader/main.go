@@ -3,9 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	zmq "github.com/pebbe/zmq4"
-	"log"
-	qcl "qcl-reader"
+	qcl "github.com/kf8a/qclreader"
 )
 
 func main() {
@@ -14,18 +12,11 @@ func main() {
 	flag.Parse()
 
 	myqcl := qcl.QCL{}
-	socket, err := zmq.NewSocket(zmq.PUB)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer socket.Close()
-	socket.Bind("tcp://*:5550")
 
 	cs := make(chan string)
 	go myqcl.Sampler(test, cs)
 	for {
 		sample := <-cs
 		fmt.Println(sample)
-		socket.Send(sample, 0)
 	}
 }
