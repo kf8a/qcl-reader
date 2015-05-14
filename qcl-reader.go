@@ -85,14 +85,14 @@ func (qcl QCL) RealSampler(cs chan string) {
 
 	for {
 		port, err := serial.OpenPort(&c)
-		defer port.Close()
 
-		qcl.port = port
 		if err != nil {
 			log.Println(err)
-			port.Close()
+			time.Sleep(2 * time.Second)
 			continue
 		}
+		qcl.port = port
+
 		for {
 			reader := csv.NewReader(qcl.port)
 			line, err := reader.Read()
@@ -120,7 +120,6 @@ func (qcl QCL) RealSampler(cs chan string) {
 
 			cs <- string(b)
 		}
-		time.Sleep(2 * time.Second)
 	}
 }
 
