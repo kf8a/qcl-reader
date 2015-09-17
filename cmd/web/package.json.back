@@ -1,0 +1,10 @@
+"devDependencies":{
+ "browserfy": latest,
+ "watch": latest,
+},
+"scripts": {
+  "build:js": "browserify assets/scripts/main.js > dist/main.js",
+  "build": "npm run build:js",
+  "build:watch": "watch 'npm run build' .",
+}
+
