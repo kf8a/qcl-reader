@@ -2,7 +2,6 @@ package qclreader
 
 import (
 	"encoding/csv"
-	"encoding/json"
 	serial "github.com/tarm/goserial"
 	"io"
 	"log"
@@ -49,7 +48,7 @@ func (qcl QCL) parseTime(value string) time.Time {
 	}
 }
 
-func (qcl QCL) RandomSample(cs chan string) {
+func (qcl QCL) RandomSampler(cs chan Datum) {
 	for {
 		time.Sleep(1 * time.Second)
 
@@ -63,25 +62,22 @@ func (qcl QCL) RandomSample(cs chan string) {
 			N2O_dry_ppm: rand.Float64(),
 			CH4_dry_ppm: rand.Float64(),
 		}
-		b, err := json.Marshal(datum)
-		if err != nil {
-			log.Println("error:", err)
-		}
 
-		cs <- string(b)
+		cs <- datum
 	}
 }
 
-func (qcl QCL) Sampler(test bool, cs chan string) {
+//Sampler is a convenience function to allow selection of test or real samplers
+func (qcl QCL) Sampler(test bool, cs chan Datum) {
 	if test {
-		go qcl.RandomSample(cs)
+		go qcl.RandomSampler(cs)
 	} else {
-		go qcl.RealSampler(cs)
+		go qcl.RealSampler(cs, "/dev/ttyUSB0")
 	}
 }
 
-func (qcl QCL) RealSampler(cs chan string) {
-	c := serial.Config{Name: "/dev/ttyUSB0", Baud: 9600}
+func (qcl QCL) RealSampler(cs chan Datum, connection_string string) {
+	c := serial.Config{Name: connection_string, Baud: 9600}
 
 	for {
 		port, err := serial.OpenPort(&c)
@@ -91,6 +87,7 @@ func (qcl QCL) RealSampler(cs chan string) {
 			time.Sleep(2 * time.Second)
 			continue
 		}
+		defer port.Close()
 		qcl.port = port
 
 		for {
@@ -111,18 +108,8 @@ func (qcl QCL) RealSampler(cs chan string) {
 				N2O_dry_ppm: qcl.parseFloat(line[7]),
 				CH4_dry_ppm: qcl.parseFloat(line[9]),
 			}
-			b, err := json.Marshal(datum)
-			if err != nil {
-				log.Println("error:", err)
-				port.Close()
-				break
-			}
 
-			cs <- string(b)
+			cs <- datum
 		}
 	}
-}
-
-func (qcl QCL) parse(data string) string {
-	return data
 }
