@@ -6,8 +6,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"log"
-	"time"
-	// "log/syslog"
 	"net/http"
 	"os"
 )
@@ -20,6 +18,8 @@ type connection struct {
 
 func (c *connection) reader() {
 	for message := range c.send {
+		// If we know here if we are recording it could be sent to both the web socket and the rabbitmq
+		// server with an appropriate uuid
 		err := c.ws.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
 			log.Println(err)
@@ -41,11 +41,6 @@ func QclHandler(q *qcl, w http.ResponseWriter, r *http.Request) {
 	c.q.register <- c
 	defer func() { c.q.unregister <- c }()
 	c.reader()
-}
-
-type Datum struct {
-	Time  time.Time
-	Value float64
 }
 
 func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
