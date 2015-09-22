@@ -58,7 +58,6 @@ func (qcl QCL) RandomSampler(cs chan Datum) {
 			CH4_ppm:     rand.Float64(),
 			H2O_ppm:     rand.Float64(),
 			N2O_ppm:     rand.Float64(),
-			CO2_ppm:     rand.Float64(),
 			N2O_dry_ppm: rand.Float64(),
 			CH4_dry_ppm: rand.Float64(),
 		}
