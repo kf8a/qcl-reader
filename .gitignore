@@ -1,2 +1,4 @@
 qcl-reader
 cmd/reader/reader
+cmd/web/web
+cmd/web/data.json

@@ -79,8 +79,7 @@ func main() {
 	flag.BoolVar(&test, "test", false, "use a random number generator instead of a live feed")
 	flag.Parse()
 
-	var host = "127.0.0.1"
-	instrument := newQcl("tcp://" + host + ":5550")
+	instrument := newQcl()
 	go instrument.read(test)
 
 	r := mux.NewRouter()
@@ -90,5 +89,5 @@ func main() {
 	r.HandleFunc("/save", SaveDataHandler)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 	http.Handle("/", r)
-	http.ListenAndServe("127.0.0.1:8080", nil)
+	http.ListenAndServe(":80", nil)
 }
