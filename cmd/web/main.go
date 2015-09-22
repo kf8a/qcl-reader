@@ -4,22 +4,30 @@ import (
 	"encoding/json"
 	"flag"
 	"github.com/gorilla/mux"
+	// "github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
+	"github.com/satori/go.uuid"
 	"log"
 	"net/http"
 	"os"
 )
 
 type connection struct {
-	ws   *websocket.Conn
-	send chan []byte
-	q    *qcl
+	ws        *websocket.Conn
+	send      chan []byte
+	q         *qcl
+	recording string
 }
 
 func (c *connection) reader() {
 	for message := range c.send {
 		// If we know here if we are recording it could be sent to both the web socket and the rabbitmq
 		// server with an appropriate uuid
+		if c.recording != "" {
+			log.Println(c.recording)
+			log.Println(message)
+		}
 		err := c.ws.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
 			log.Println(err)
@@ -31,6 +39,7 @@ func (c *connection) reader() {
 
 var upgrader = websocket.Upgrader{ReadBufferSize: 1024, WriteBufferSize: 1024}
 
+//QclHandler handles a new connection, creates and registers a new connection to the QCL reader
 func QclHandler(q *qcl, w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -41,6 +50,21 @@ func QclHandler(q *qcl, w http.ResponseWriter, r *http.Request) {
 	c.q.register <- c
 	defer func() { c.q.unregister <- c }()
 	c.reader()
+}
+
+var store = sessions.NewCookieStore([]byte("qcl-error-code"))
+
+func RecordHandler(w http.ResponseWriter, r *http.Request) {
+	// generate a uuid and save it in the session
+	// set the flag that this session is now recording
+	session, err := store.Get(r, "qcl-session")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	session.Values["recording"] = uuid.NewV4()
+	session.Save(r, w)
+
 }
 
 func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,6 +90,15 @@ func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	f.Sync()
 
+	session, err := store.Get(r, "qcl-session")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	session.Values["recording"] = ""
+	session.Save(r, w)
+
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
@@ -82,7 +115,8 @@ func main() {
 		QclHandler(instrument, w, r)
 	})
 	r.HandleFunc("/save", SaveDataHandler)
+	r.HandleFunc("/record", RecordHandler)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 	http.Handle("/", r)
-	http.ListenAndServe(":80", nil)
+	http.ListenAndServe(":8080", nil)
 }
