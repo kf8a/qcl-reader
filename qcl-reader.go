@@ -94,8 +94,11 @@ func (qcl QCL) RealSampler(cs chan Datum, connection_string string) {
 			line, err := reader.Read()
 			if err != nil {
 				log.Println(err)
-				port.Close()
-				break
+				continue
+			}
+			if len(line) < 10 {
+				log.Println("short line", line)
+				continue
 			}
 			datum := Datum{
 				ObsTime:     time.Now(),
