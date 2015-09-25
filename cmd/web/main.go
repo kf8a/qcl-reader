@@ -56,14 +56,21 @@ func RecordHandler(w http.ResponseWriter, r *http.Request) {
 	// generate a uuid and save it in the session
 	// set the flag that this session is now recording
 	session, _ := store.Get(r, "qcl-session")
-	log.Println("RecordHandler")
-	log.Println(session)
+	if user_id, ok := session.Values["user_id"].(string); ok {
+		if user_id == "" {
+			log.Println("ERROR: no user")
+		}
+	}
 }
 
 func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "qcl-session")
-	log.Println("SaveHandler")
-	log.Println(session)
+	if user_id, ok := session.Values["user_id"].(string); ok {
+		if user_id == "" {
+			log.Println("ERROR: no user")
+		}
+	}
+
 	decoder := json.NewDecoder(r.Body)
 
 	var data map[string]interface{}
@@ -102,8 +109,6 @@ func MyServeFileHandler(h http.Handler) http.Handler {
 		if err != nil {
 			log.Println(err)
 		}
-		log.Println("FileHandler")
-		log.Println(session)
 		h.ServeHTTP(w, r)
 	})
 }
