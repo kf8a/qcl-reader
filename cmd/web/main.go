@@ -41,7 +41,6 @@ var store = sessions.NewCookieStore([]byte("qcl-error-code"))
 func QclHandler(q *qcl, w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "qcl-session")
 	if user_id, ok := session.Values["user_id"].(string); ok {
-		log.Println(user_id)
 
 		ws, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
@@ -50,6 +49,7 @@ func QclHandler(q *qcl, w http.ResponseWriter, r *http.Request) {
 		}
 
 		c := &connection{send: make(chan []byte), ws: ws, q: q}
+		connections[user_id] = c
 
 		c.q.register <- c
 		defer func() { c.q.unregister <- c }()
@@ -65,17 +65,19 @@ func RecordHandler(w http.ResponseWriter, r *http.Request) {
 	// set the flag that this session is now recording
 	session, _ := store.Get(r, "qcl-session")
 	if user_id, ok := session.Values["user_id"].(string); ok {
-		if user_id == "" {
-			log.Println("ERROR: no user")
-		}
+		session.Values["sample_id"] = uuid.NewV4().String()
+		// send out a start recording message with the user id and the sample_id and treatment and height
+	} else {
+		log.Println("ERROR: Record Handler no user")
 	}
+
 }
 
 func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "qcl-session")
 	if user_id, ok := session.Values["user_id"].(string); ok {
 		if user_id == "" {
-			log.Println("ERROR: no user")
+			log.Println("ERROR: SaveDataHandler no user")
 		}
 	}
 
@@ -107,12 +109,7 @@ func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 func MyServeFileHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, "qcl-session")
-		if _, ok := session.Values["user_id"].(string); ok {
-			// if user_id == "" {
-			// 	user_id := uuid.NewV4().String()
-			// 	session.Values["user_id"] = user_id
-			// }
-		} else {
+		if _, ok := session.Values["user_id"].(string); !ok {
 			user_id := uuid.NewV4().String()
 			session.Values["user_id"] = user_id
 		}
