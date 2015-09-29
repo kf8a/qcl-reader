@@ -97,6 +97,12 @@ var App = React.createClass({displayName: "App",
 
   handleRecord: function(e) {
     e.preventDefault();
+    jQuery.ajax({
+      type: "POST",
+      url: "/record",
+      data: "",
+      dataType: 'json'
+    });
     this.resetData();
     this.setState({recording: true,
                   now: new Date()})
