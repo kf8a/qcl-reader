@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 type connection struct {
@@ -60,16 +61,35 @@ func QclHandler(q *qcl, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type Recording struct {
+	At       time.Time
+	Type     string
+	SampleId string
+	UserId   string
+}
+
 func RecordHandler(w http.ResponseWriter, r *http.Request) {
 	// generate a uuid and save it in the session
 	// set the flag that this session is now recording
 	session, _ := store.Get(r, "qcl-session")
 	if user_id, ok := session.Values["user_id"].(string); ok {
-		session.Values["sample_id"] = uuid.NewV4().String()
-		// send out a start recording message with the user id and the sample_id and treatment and height
+		sample_id := uuid.NewV4().String()
+		session.Values["sample_id"] = sample_id
 
-		// connection.send({'user_id': user_id, 'sample_id': sample_id, 'event': 'startRecording'})
-		log.Println(user_id)
+		// send out a start recording message with the user id and the sample_id and treatment and height
+		data := &Recording{
+			At:       time.Now(),
+			Type:     "start",
+			SampleId: sample_id,
+			UserId:   user_id,
+		}
+		sample, err := json.Marshal(data)
+		if err != nil {
+			log.Print(err)
+		} else {
+			publish("control", sample)
+		}
+
 	} else {
 		log.Println("ERROR: Record Handler no user")
 	}
@@ -84,6 +104,18 @@ func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if sample_id, ok := session.Values["session_id"].(string); ok {
 			// connection.send({'user_id': user_id, 'sample_id': sample_id, 'event': 'stopRecording'})
+			data := &Recording{
+				At:       time.Now(),
+				Type:     "stop",
+				SampleId: sample_id,
+				UserId:   user_id,
+			}
+			sample, err := json.Marshal(data)
+			if err != nil {
+				log.Print(err)
+			} else {
+				publish("control", sample)
+			}
 			log.Println(sample_id)
 		}
 	}
