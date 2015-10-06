@@ -2,3 +2,4 @@ qcl-reader
 cmd/reader/reader
 cmd/web/web
 cmd/web/data.json
+cmd/web/public/*.js
