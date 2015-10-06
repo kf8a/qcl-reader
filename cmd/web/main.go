@@ -96,6 +96,32 @@ func RecordHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func CancelHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "qcl-session")
+	if user_id, ok := session.Values["user_id"].(string); ok {
+		if user_id == "" {
+			log.Println("ERROR: SaveDataHandler no user")
+		}
+		if sample_id, ok := session.Values["session_id"].(string); ok {
+			// connection.send({'user_id': user_id, 'sample_id': sample_id, 'event': 'stopRecording'})
+			data := &Recording{
+				At:       time.Now(),
+				Type:     "cancel",
+				SampleId: sample_id,
+				UserId:   user_id,
+			}
+			sample, err := json.Marshal(data)
+			if err != nil {
+				log.Print(err)
+			} else {
+				publish("control", sample)
+			}
+			log.Println(sample_id)
+		}
+	}
+
+	http.Redirect(w, r, "/", http.StatusFound)
+}
 func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "qcl-session")
 	if user_id, ok := session.Values["user_id"].(string); ok {
@@ -174,6 +200,7 @@ func main() {
 	})
 	r.HandleFunc("/save", SaveDataHandler)
 	r.HandleFunc("/record", RecordHandler)
+	r.HandleFunc("/cancel", CancelHandler)
 	fileHandler := http.FileServer(http.Dir("./public/"))
 	r.PathPrefix("/").Handler(MyServeFileHandler(fileHandler))
 	// r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
