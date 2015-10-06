@@ -71,6 +71,10 @@ var App = React.createClass({
 
   handleCancel: function(e) {
     e.preventDefault();
+    jQuery.ajax({
+      type: "POST",
+      url: "/cancel"
+    });
     this.resetData();
     this.setState({n2o_flux: null,
                   co2_flux: null,
