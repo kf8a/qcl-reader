@@ -13,7 +13,7 @@ var (
 	reliable     = true
 )
 
-func publish(message []byte) error {
+func publish(key string, message []byte) error {
 	connection, err := amqp.Dial(uri)
 	if err != nil {
 		log.Println("Dial: %s", err)
@@ -40,10 +40,11 @@ func publish(message []byte) error {
 	}
 
 	if err = channel.Publish(
-		exchange,   // publish to an exchange
-		routingKey, // routing to 0 or more queues
-		false,      // mandatory
-		false,      // immediate
+		exchange, // publish to an exchange
+		key,
+		// routingKey, // routing to 0 or more queues
+		false, // mandatory
+		false, // immediate
 		amqp.Publishing{
 			Headers:         amqp.Table{},
 			ContentType:     "text/plain",

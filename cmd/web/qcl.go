@@ -53,7 +53,7 @@ func (q *qcl) read(test bool) {
 		if err != nil {
 			log.Print(err)
 		} else {
-			publish(sample)
+			publish("measurement", sample)
 		}
 
 		select {
