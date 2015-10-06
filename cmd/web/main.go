@@ -67,6 +67,9 @@ func RecordHandler(w http.ResponseWriter, r *http.Request) {
 	if user_id, ok := session.Values["user_id"].(string); ok {
 		session.Values["sample_id"] = uuid.NewV4().String()
 		// send out a start recording message with the user id and the sample_id and treatment and height
+
+		// connection.send({'user_id': user_id, 'sample_id': sample_id, 'event': 'startRecording'})
+		log.Println(user_id)
 	} else {
 		log.Println("ERROR: Record Handler no user")
 	}
@@ -78,6 +81,10 @@ func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 	if user_id, ok := session.Values["user_id"].(string); ok {
 		if user_id == "" {
 			log.Println("ERROR: SaveDataHandler no user")
+		}
+		if sample_id, ok := session.Values["session_id"].(string); ok {
+			// connection.send({'user_id': user_id, 'sample_id': sample_id, 'event': 'stopRecording'})
+			log.Println(sample_id)
 		}
 	}
 
