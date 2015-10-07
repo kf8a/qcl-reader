@@ -1,9 +1,8 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	qclReader "github.com/kf8a/qclreader"
-	"github.com/montanaflynn/stats"
 	"math"
 	"time"
 )
@@ -22,14 +21,14 @@ func newSampler() *sampler {
 func (s *sampler) Sample() {
 	//register with qcl
 
-	data := make([]stats.Coordinate, 100)
+	data := make([]Coordinate, 100)
 	startTime := time.Now()
 
 	for {
 		datum := <-s.measurement
-		c := stats.Coordinate{float64(datum.Time.Sub(startTime)), datum.N2O_dry_ppm}
+		c := Coordinate{float64(datum.Time.Sub(startTime)), datum.N2O_dry_ppm}
 		data = append(data, c)
-		_, _ = stats.LinearRegression(data)
+		fmt.Println(data)
 	}
 }
 

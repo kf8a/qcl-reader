@@ -16,14 +16,14 @@ var (
 func publish(key string, message []byte) error {
 	connection, err := amqp.Dial(uri)
 	if err != nil {
-		log.Println("Dial: %s", err)
+		log.Printf("Dial: %s", err)
 		return err
 	}
 	defer connection.Close()
 
 	channel, err := connection.Channel()
 	if err != nil {
-		log.Println("Channel: %s", err)
+		log.Printf("Channel: %s", err)
 		return err
 	}
 	if err := channel.ExchangeDeclare(
@@ -55,7 +55,7 @@ func publish(key string, message []byte) error {
 			// a bunch of application/implementation-specific fields
 		},
 	); err != nil {
-		log.Print("Exchange Publish: %s", err)
+		log.Printf("Exchange Publish: %s", err)
 		return err
 	}
 	return nil
