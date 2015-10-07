@@ -8,10 +8,11 @@ import (
 )
 
 type qcl struct {
-	connections map[*connection]bool
-	recordings  map[string]*connection
-	register    chan *connection
-	unregister  chan *connection
+	connections    map[*connection]bool
+	recordings     map[string]*connection
+	register       chan *connection
+	unregister     chan *connection
+	dataConnection map[*connection]qclReader.Datum
 }
 
 func newQcl() *qcl {
@@ -65,10 +66,6 @@ func (q *qcl) read(test bool) {
 			for c := range q.connections {
 				select {
 				case c.send <- []byte(sample):
-					// log.Println(c.recording)
-					if len(c.recording) > 0 {
-						log.Println(sample)
-					}
 				default:
 					delete(q.connections, c)
 					close(c.send)

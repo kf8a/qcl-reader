@@ -15,10 +15,9 @@ import (
 )
 
 type connection struct {
-	ws        *websocket.Conn
-	send      chan []byte
-	q         *qcl
-	recording string
+	ws   *websocket.Conn
+	send chan []byte
+	q    *qcl
 }
 
 var connections = make(map[string]*connection)
@@ -66,6 +65,7 @@ type Recording struct {
 	Type     string
 	SampleId string
 	UserId   string
+	data     chan []byte
 }
 
 func RecordHandler(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +75,6 @@ func RecordHandler(w http.ResponseWriter, r *http.Request) {
 	if user_id, ok := session.Values["user_id"].(string); ok {
 		sample_id := uuid.NewV4().String()
 		session.Values["sample_id"] = sample_id
-
 		// send out a start recording message with the user id and the sample_id and treatment and height
 		data := &Recording{
 			At:       time.Now(),
@@ -83,6 +82,7 @@ func RecordHandler(w http.ResponseWriter, r *http.Request) {
 			SampleId: sample_id,
 			UserId:   user_id,
 		}
+		session.Values["recording"] = data
 		sample, err := json.Marshal(data)
 		if err != nil {
 			log.Print(err)
@@ -93,7 +93,7 @@ func RecordHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		log.Println("ERROR: Record Handler no user")
 	}
-
+	session.Save(r, w)
 }
 
 func CancelHandler(w http.ResponseWriter, r *http.Request) {
@@ -122,6 +122,7 @@ func CancelHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/", http.StatusFound)
 }
+
 func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "qcl-session")
 	if user_id, ok := session.Values["user_id"].(string); ok {
