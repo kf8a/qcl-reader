@@ -20,8 +20,6 @@ type connection struct {
 	q    *qcl
 }
 
-var connections = make(map[string]*connection)
-
 func (c *connection) reader() {
 	for message := range c.send {
 		err := c.ws.WriteMessage(websocket.TextMessage, message)
@@ -39,25 +37,17 @@ var store = sessions.NewCookieStore([]byte("qcl-error-code"))
 
 //QclHandler handles a new connection, creates and registers a new connection to the QCL reader
 func QclHandler(q *qcl, w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "qcl-session")
-	if user_id, ok := session.Values["user_id"].(string); ok {
-
-		ws, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		c := &connection{send: make(chan []byte), ws: ws, q: q}
-		connections[user_id] = c
-
-		c.q.register <- c
-		defer func() { c.q.unregister <- c }()
-		c.reader()
-	} else {
-		log.Println("ERROR: no user")
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
 		return
 	}
+
+	c := &connection{send: make(chan []byte), ws: ws, q: q}
+
+	c.q.register <- c
+	defer func() { c.q.unregister <- c }()
+	c.reader()
 }
 
 type Recording struct {
@@ -206,6 +196,6 @@ func main() {
 	r.PathPrefix("/").Handler(MyServeFileHandler(fileHandler))
 	// r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 	http.Handle("/", r)
-	// http.ListenAndServe(":80", nil)
-	http.ListenAndServe("127.0.0.1:8080", nil)
+	http.ListenAndServe(":8080", nil)
+	// http.ListenAndServe("127.0.0.1:8080", nil)
 }
