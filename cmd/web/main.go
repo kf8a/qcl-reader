@@ -25,6 +25,7 @@ func (c *connection) reader() {
 		err := c.ws.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
 			log.Println(err)
+			c.ws.Close()
 			return
 		}
 	}
