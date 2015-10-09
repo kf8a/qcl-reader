@@ -35,6 +35,9 @@ func TestFit(t *testing.T) {
 
 func TestWorkflow(t *testing.T) {
 	// create samples
+	s := newSampler()
 	// feed some data in
+	go s.Sample()
+	s.control <- "A"
 	// compute fit
 }

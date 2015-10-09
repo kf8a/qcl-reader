@@ -25,10 +25,15 @@ func (s *sampler) Sample() {
 	startTime := time.Now()
 
 	for {
-		datum := <-s.measurement
-		c := Coordinate{float64(datum.Time.Sub(startTime)), datum.N2O_dry_ppm}
-		data = append(data, c)
-		fmt.Println(data)
+		select {
+		case <-s.control:
+			break
+		default:
+			datum := <-s.measurement
+			c := Coordinate{float64(datum.Time.Sub(startTime)), datum.N2O_dry_ppm}
+			data = append(data, c)
+			fmt.Println(data)
+		}
 	}
 }
 
