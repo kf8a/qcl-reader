@@ -25,7 +25,6 @@ func (c *connection) reader() {
 		err := c.ws.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
 			log.Println(err)
-			c.ws.Close()
 			return
 		}
 	}
@@ -47,8 +46,10 @@ func QclHandler(q *qcl, w http.ResponseWriter, r *http.Request) {
 	c := &connection{send: make(chan []byte), ws: ws, q: q}
 
 	c.q.register <- c
-	defer func() { c.q.unregister <- c }()
+	// defer func() { c.q.unregister <- c }()
 	c.reader()
+	c.q.unregister <- c
+	log.Println("Reader exited")
 }
 
 type Recording struct {

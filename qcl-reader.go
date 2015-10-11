@@ -50,7 +50,7 @@ func (qcl QCL) parseTime(value string) time.Time {
 
 func (qcl QCL) RandomSampler(cs chan Datum) {
 	for {
-		time.Sleep(1 * time.Second)
+		time.Sleep(1) // * time.Second)
 
 		datum := Datum{
 			ObsTime:     time.Now(),

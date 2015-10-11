@@ -70,7 +70,6 @@ func (q *qcl) read(test bool) {
 		default:
 			for c := range q.connections {
 				log.Println("processing")
-				log.Println(c)
 				select {
 				case c.send <- []byte(sample):
 					log.Println("send")
