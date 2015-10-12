@@ -66,10 +66,21 @@ func (q *qcl) read(test bool) {
 		case c := <-q.unregister:
 			log.Println("unregistering connection")
 			log.Println(c)
+			log.Println(q.connections)
 			q.connections[c] = false
 		default:
+			log.Println("Current connections")
+			log.Println(q.connections)
 			for c := range q.connections {
 				log.Println("processing")
+				log.Println(q.connections[c])
+				if !q.connections[c] {
+					log.Println("delete before")
+					delete(q.connections, c)
+					close(c.send)
+					continue
+				}
+				log.Println(q.connections[c])
 				select {
 				case c.send <- []byte(sample):
 					log.Println("send")
