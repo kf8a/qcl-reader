@@ -49,7 +49,6 @@ func QclHandler(q *qcl, w http.ResponseWriter, r *http.Request) {
 	// defer func() { c.q.unregister <- c }()
 	c.reader()
 	c.q.unregister <- c
-	log.Println("Reader exited")
 }
 
 type Recording struct {
