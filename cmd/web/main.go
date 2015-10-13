@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"github.com/gorilla/mux"
-	"strconv"
 	// "github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
@@ -54,43 +53,49 @@ func QclHandler(q *qcl, w http.ResponseWriter, r *http.Request) {
 }
 
 type Recording struct {
-	StartedAt time.Time
-	EndedAt   time.Time
-	Canceled  bool
-	SampleId  string
-	UserId    string
-	data      chan []byte
-	Plot      string
-	Depth     float64
+	StartedAt     time.Time
+	EndedAt       time.Time
+	Canceled      bool
+	SampleId      string
+	UserId        string
+	data          chan []byte
+	Plot          string
+	ChamberHeight float64
+	FluxData      map[string]interface{}
+}
+
+type Chamber struct {
+	Plot   string
+	Height float64
 }
 
 func RecordHandler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		log.Println(err)
-	}
 	session, _ := store.Get(r, "qcl-session")
 	if user_id, ok := session.Values["user_id"].(string); ok {
-		// get form fields
 
 		// generate a uuid and save it in the session
 		// set the flag that this session is now recording
 		sample_id := uuid.NewV4().String()
 		session.Values["sample_id"] = sample_id
 		// send out a start recording message with the user id and the sample_id and treatment and height
-		depth, err := strconv.ParseFloat(r.FormValue("depth"), 64)
+
+		// get form fields
+		decoder := json.NewDecoder(r.Body)
+		var chamber Chamber
+		err := decoder.Decode(&chamber)
 		if err != nil {
 			log.Fatal(err)
 		}
-		data := &Recording{
-			StartedAt: time.Now(),
-			SampleId:  sample_id,
-			UserId:    user_id,
-			Plot:      r.FormValue("plot"),
-			Depth:     depth,
+
+		recording := &Recording{
+			StartedAt:     time.Now(),
+			SampleId:      sample_id,
+			UserId:        user_id,
+			Plot:          chamber.Plot,
+			ChamberHeight: chamber.Height,
 		}
-		session.Values["recording"] = data
-		sample, err := json.Marshal(data)
+		session.Values["recording"] = recording
+		sample, err := json.Marshal(recording)
 		if err != nil {
 			log.Print(err)
 		} else {
@@ -110,23 +115,20 @@ func CancelHandler(w http.ResponseWriter, r *http.Request) {
 		if user_id == "" {
 			log.Println("ERROR: SaveDataHandler no user")
 		}
-		if sample_id, ok := session.Values["session_id"].(string); ok {
-			recording, ok = session.Values["recording"].(Recording)
-			if ok {
-				recording.EndedAt = time.Now()
-				recording.Canceled = true
+		recording, ok = session.Values["recording"].(Recording)
+		if ok {
+			recording.EndedAt = time.Now()
+			recording.Canceled = true
 
-				session.Values["recording"] = recording
-				sample, err := json.Marshal(recording)
-				if err != nil {
-					log.Fatal(err)
-				} else {
-					publish("control", sample)
-				}
-				log.Println(sample_id)
+			session.Values["recording"] = recording
+			sample, err := json.Marshal(recording)
+			if err != nil {
+				log.Fatal(err)
 			} else {
-				log.Fatal(ok)
+				publish("control", sample)
 			}
+		} else {
+			log.Fatal(ok)
 		}
 	}
 	session.Save(r, w)
@@ -140,24 +142,22 @@ func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 		if user_id == "" {
 			log.Println("ERROR: SaveDataHandler no user")
 		}
-		if sample_id, ok := session.Values["session_id"].(string); ok {
-			recording, ok = session.Values["recording"].(Recording)
-			if ok {
-				recording.EndedAt = time.Now()
-				recording.Canceled = false
+		recording, ok = session.Values["recording"].(Recording)
+		if ok {
+			recording.EndedAt = time.Now()
+			recording.Canceled = false
 
-				session.Values["recording"] = recording
-				sample, err := json.Marshal(recording)
-				if err != nil {
-					log.Fatal(err)
-				} else {
-					publish("control", sample)
-				}
-				log.Println(sample_id)
+			sample, err := json.Marshal(recording)
+			if err != nil {
+				log.Fatal(err)
 			} else {
-				log.Fatal(ok)
+				publish("control", sample)
 			}
+		} else {
+			log.Fatal("NO recording found")
 		}
+	} else {
+		log.Fatal("NO user found")
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -167,6 +167,7 @@ func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
+	recording.FluxData = data
 
 	// save data
 	f, err := os.OpenFile("data.json", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0600)
@@ -180,9 +181,9 @@ func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 	if err := encoder.Encode(&recording); err != nil {
 		log.Fatal(err)
 	}
-	if err := encoder.Encode(&data); err != nil {
-		log.Fatal(err)
-	}
+	// if err := encoder.Encode(&data); err != nil {
+	// 	log.Fatal(err)
+	// }
 	f.Sync()
 
 	http.Redirect(w, r, "/", http.StatusFound)
@@ -226,6 +227,6 @@ func main() {
 	r.PathPrefix("/").Handler(MyServeFileHandler(fileHandler))
 	// r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 	http.Handle("/", r)
-	http.ListenAndServe(":8080", nil)
-	// http.ListenAndServe("127.0.0.1:8080", nil)
+	// http.ListenAndServe(":8080", nil)
+	http.ListenAndServe("127.0.0.1:8080", nil)
 }
