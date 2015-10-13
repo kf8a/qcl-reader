@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/gob"
 	"encoding/json"
 	"flag"
 	"github.com/gorilla/mux"
+	"strconv"
 	// "github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
@@ -52,26 +54,40 @@ func QclHandler(q *qcl, w http.ResponseWriter, r *http.Request) {
 }
 
 type Recording struct {
-	At       time.Time
-	Type     string
-	SampleId string
-	UserId   string
-	data     chan []byte
+	StartedAt time.Time
+	EndedAt   time.Time
+	Canceled  bool
+	SampleId  string
+	UserId    string
+	data      chan []byte
+	Plot      string
+	Depth     float64
 }
 
 func RecordHandler(w http.ResponseWriter, r *http.Request) {
-	// generate a uuid and save it in the session
-	// set the flag that this session is now recording
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+	}
 	session, _ := store.Get(r, "qcl-session")
 	if user_id, ok := session.Values["user_id"].(string); ok {
+		// get form fields
+
+		// generate a uuid and save it in the session
+		// set the flag that this session is now recording
 		sample_id := uuid.NewV4().String()
 		session.Values["sample_id"] = sample_id
 		// send out a start recording message with the user id and the sample_id and treatment and height
+		depth, err := strconv.ParseFloat(r.FormValue("depth"), 64)
+		if err != nil {
+			log.Fatal(err)
+		}
 		data := &Recording{
-			At:       time.Now(),
-			Type:     "start",
-			SampleId: sample_id,
-			UserId:   user_id,
+			StartedAt: time.Now(),
+			SampleId:  sample_id,
+			UserId:    user_id,
+			Plot:      r.FormValue("plot"),
+			Depth:     depth,
 		}
 		session.Values["recording"] = data
 		sample, err := json.Marshal(data)
@@ -88,53 +104,59 @@ func RecordHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CancelHandler(w http.ResponseWriter, r *http.Request) {
+	var recording Recording
 	session, _ := store.Get(r, "qcl-session")
 	if user_id, ok := session.Values["user_id"].(string); ok {
 		if user_id == "" {
 			log.Println("ERROR: SaveDataHandler no user")
 		}
 		if sample_id, ok := session.Values["session_id"].(string); ok {
-			// connection.send({'user_id': user_id, 'sample_id': sample_id, 'event': 'stopRecording'})
-			data := &Recording{
-				At:       time.Now(),
-				Type:     "cancel",
-				SampleId: sample_id,
-				UserId:   user_id,
-			}
-			sample, err := json.Marshal(data)
-			if err != nil {
-				log.Print(err)
+			recording, ok = session.Values["recording"].(Recording)
+			if ok {
+				recording.EndedAt = time.Now()
+				recording.Canceled = true
+
+				session.Values["recording"] = recording
+				sample, err := json.Marshal(recording)
+				if err != nil {
+					log.Fatal(err)
+				} else {
+					publish("control", sample)
+				}
+				log.Println(sample_id)
 			} else {
-				publish("control", sample)
+				log.Fatal(ok)
 			}
-			log.Println(sample_id)
 		}
 	}
-
+	session.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
+	var recording Recording
 	session, _ := store.Get(r, "qcl-session")
 	if user_id, ok := session.Values["user_id"].(string); ok {
 		if user_id == "" {
 			log.Println("ERROR: SaveDataHandler no user")
 		}
 		if sample_id, ok := session.Values["session_id"].(string); ok {
-			// connection.send({'user_id': user_id, 'sample_id': sample_id, 'event': 'stopRecording'})
-			data := &Recording{
-				At:       time.Now(),
-				Type:     "stop",
-				SampleId: sample_id,
-				UserId:   user_id,
-			}
-			sample, err := json.Marshal(data)
-			if err != nil {
-				log.Print(err)
+			recording, ok = session.Values["recording"].(Recording)
+			if ok {
+				recording.EndedAt = time.Now()
+				recording.Canceled = false
+
+				session.Values["recording"] = recording
+				sample, err := json.Marshal(recording)
+				if err != nil {
+					log.Fatal(err)
+				} else {
+					publish("control", sample)
+				}
+				log.Println(sample_id)
 			} else {
-				publish("control", sample)
+				log.Fatal(ok)
 			}
-			log.Println(sample_id)
 		}
 	}
 
@@ -145,6 +167,7 @@ func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
+
 	// save data
 	f, err := os.OpenFile("data.json", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0600)
 	if err != nil {
@@ -154,9 +177,11 @@ func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 	defer f.Close()
 
 	encoder := json.NewEncoder(f)
+	if err := encoder.Encode(&recording); err != nil {
+		log.Fatal(err)
+	}
 	if err := encoder.Encode(&data); err != nil {
-		log.Println(err)
-		return
+		log.Fatal(err)
 	}
 	f.Sync()
 
@@ -176,6 +201,10 @@ func MyServeFileHandler(h http.Handler) http.Handler {
 		}
 		h.ServeHTTP(w, r)
 	})
+}
+
+func init() {
+	gob.Register(Recording{})
 }
 
 func main() {
