@@ -38,6 +38,5 @@ func TestWorkflow(t *testing.T) {
 	s := newSampler()
 	// feed some data in
 	go s.Sample()
-	s.control <- "A"
 	// compute fit
 }
