@@ -2,7 +2,7 @@ package qclreader
 
 import (
 	"encoding/csv"
-	serial "github.com/tarm/goserial"
+	serial "github.com/tarm/serial"
 	"io"
 	"log"
 	"math/rand"
