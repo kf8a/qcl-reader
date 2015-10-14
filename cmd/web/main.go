@@ -209,12 +209,14 @@ func init() {
 }
 
 func main() {
+	log.Println("QCL started")
 	var test bool
 	flag.BoolVar(&test, "test", false, "use a random number generator instead of a live feed")
 	flag.Parse()
 
 	instrument := newQcl()
 	go instrument.read(test)
+	log.Println("instrument initialized")
 
 	r := mux.NewRouter()
 	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
@@ -227,6 +229,7 @@ func main() {
 	r.PathPrefix("/").Handler(MyServeFileHandler(fileHandler))
 	// r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 	http.Handle("/", r)
-	// http.ListenAndServe(":8080", nil)
-	http.ListenAndServe("127.0.0.1:8080", nil)
+	http.ListenAndServe(":8080", nil)
+	// http.ListenAndServe("127.0.0.1:8080", nil)
+	log.Println("QCL exiting")
 }

@@ -34,7 +34,7 @@ var Result =  React.createClass({
           </div>
           <div className="form-group">
           <label for="height">Height</label>
-          <input id="height" type='number'/> cm
+          <input id="height" type='number' value={this.props.height}/> cm
         </div>
         </form>
         <button type='button' className="btn btn-primary btn-lg" onClick={this.props.handleRecord}>Record</button>

@@ -16,7 +16,9 @@ var App = React.createClass({
       n2o_intercept: 0,
       co2_intercept: 0,
       ch4_intercept: 0,
-      now: new Date()
+      now: new Date(),
+      height: 0,
+      plot: "T1R1"
     };
   },
 
@@ -57,9 +59,12 @@ var App = React.createClass({
         handleSave={this.handleSave}
         handleCancel={this.handleCancel}
         recording={this.state.recording}
-        n2o={this.state.n2o_flux} 
-        co2={this.state.co2_flux} 
-        ch4={this.state.ch4_flux}/>
+        n2o={this.state.n2o_flux}
+        co2={this.state.co2_flux}
+        ch4={this.state.ch4_flux}
+        height={this.state.height}
+        plot={this.state.plot}
+        />
         </div>
       </div>
     );
@@ -105,7 +110,7 @@ var App = React.createClass({
     jQuery.ajax({
       type: "POST",
       url: "/record",
-      data: "",
+      data: JSON.stringify({"plot": this.state.plot, "height": this.state.height}),
       dataType: 'json'
     });
     this.setState({recording: true,
