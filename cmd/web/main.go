@@ -100,6 +100,7 @@ func RecordHandler(w http.ResponseWriter, r *http.Request) {
 			log.Print(err)
 		} else {
 			publish("control", sample)
+			log.Println(sample)
 		}
 
 	} else {
