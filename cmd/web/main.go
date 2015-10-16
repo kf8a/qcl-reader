@@ -127,6 +127,7 @@ func CancelHandler(w http.ResponseWriter, r *http.Request) {
 				log.Fatal(err)
 			} else {
 				publish("control", sample)
+				log.Println(sample)
 			}
 		} else {
 			log.Fatal(ok)
@@ -153,6 +154,7 @@ func SaveDataHandler(w http.ResponseWriter, r *http.Request) {
 				log.Fatal(err)
 			} else {
 				publish("control", sample)
+				log.Println(sample)
 			}
 		} else {
 			log.Fatal("NO recording found")
