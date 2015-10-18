@@ -33,6 +33,10 @@ func (s *sampler) Sample() {
 			c := Coordinate{float64(datum.Time.Sub(startTime)), datum.N2O_dry_ppm}
 			data = append(data, c)
 			fmt.Println(data)
+			_, r := Fit(data)
+			if r > 0.9 {
+				break
+			}
 		}
 	}
 }
