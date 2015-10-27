@@ -39,6 +39,52 @@ func publish(key string, message []byte) error {
 		return err
 	}
 
+	if _, err := channel.QueueDeclare(
+		"measurement", //name
+		true,          // durable
+		false,         //autodelete
+		false,         //exclusive
+		false,         //noWait
+		nil,           //arguments
+	); err != nil {
+		log.Printf("Measurement Queue Declare: %s", err)
+		return err
+	}
+
+	if err = channel.QueueBind(
+		"measurement", //name
+		"measurement", //routing key
+		exchange,      //exchange
+		false,         //noWait
+		nil,           //arguments
+	); err != nil {
+		log.Printf("Measurement Queue Binding: %s", err)
+		return err
+	}
+
+	if _, err = channel.QueueDeclare(
+		"control", //name
+		true,      // durable
+		false,     //autodelete
+		false,     //exclusive
+		false,     //noWait
+		nil,       //arguments
+	); err != nil {
+		log.Printf("Control Queue Declare: %s", err)
+		return err
+	}
+
+	if err = channel.QueueBind(
+		"control", //name
+		"control", //routing key
+		exchange,  //exchange
+		false,     //noWait
+		nil,       //arguments
+	); err != nil {
+		log.Printf("Control Queue Binding: %s", err)
+		return err
+	}
+
 	if err = channel.Publish(
 		exchange, // publish to an exchange
 		key,
