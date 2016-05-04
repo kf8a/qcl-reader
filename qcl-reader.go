@@ -67,11 +67,11 @@ func (qcl QCL) RandomSampler(cs chan Datum) {
 }
 
 //Sampler is a convenience function to allow selection of test or real samplers
-func (qcl QCL) Sampler(test bool, cs chan Datum) {
+func (qcl QCL) Sampler(test bool, cs chan Datum, port string) {
 	if test {
 		go qcl.RandomSampler(cs)
 	} else {
-		go qcl.RealSampler(cs, "/dev/ttyUSB0")
+		go qcl.RealSampler(cs, port)
 	}
 }
 

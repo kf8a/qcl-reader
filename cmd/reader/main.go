@@ -16,7 +16,7 @@ func main() {
 	myqcl := qcl.QCL{}
 
 	cs := make(chan qcl.Datum)
-	go myqcl.Sampler(test, cs)
+	go myqcl.Sampler(test, cs, "/dev/qcl")
 	for {
 		data := <-cs
 		sample, err := json.Marshal(data)
