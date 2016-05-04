@@ -4,3 +4,4 @@ cmd/web/web
 cmd/web/data.json
 cmd/web/public/*.js
 .vagrant
+cmd/web/public/.module-cache/
