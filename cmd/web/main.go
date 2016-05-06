@@ -9,9 +9,11 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
 	"github.com/satori/go.uuid"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -60,13 +62,13 @@ type Recording struct {
 	UserId        string
 	data          chan []byte
 	Plot          string
-	ChamberHeight float64
+	ChamberHeight string
 	FluxData      map[string]interface{}
 }
 
 type Chamber struct {
 	Plot   string
-	Height float64
+	Height string
 }
 
 func RecordHandler(w http.ResponseWriter, r *http.Request) {
@@ -80,9 +82,14 @@ func RecordHandler(w http.ResponseWriter, r *http.Request) {
 		// send out a start recording message with the user id and the sample_id and treatment and height
 
 		// get form fields
-		decoder := json.NewDecoder(r.Body)
+		contents, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Fatal("readAll errror %", err)
+		}
+		log.Printf("%s\n", string(contents))
+		decoder := json.NewDecoder(strings.NewReader(string(contents)))
 		var chamber Chamber
-		err := decoder.Decode(&chamber)
+		err = decoder.Decode(&chamber)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -232,7 +239,11 @@ func main() {
 	r.PathPrefix("/").Handler(MyServeFileHandler(fileHandler))
 	// r.PathPrefix("/").Handler(http.FileServer(http.Dir("./public/")))
 	http.Handle("/", r)
-	http.ListenAndServe(":8080", nil)
+	log.Println("handlers attached listen on :8080")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// http.ListenAndServe("127.0.0.1:8080", nil)
 	log.Println("QCL exiting")
 }
