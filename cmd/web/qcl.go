@@ -28,9 +28,9 @@ func (q *qcl) setup(test bool) (cs chan qclReader.Datum, co2 chan li820.Datum) {
 	myqcl := qclReader.QCL{}
 
 	cs = make(chan qclReader.Datum)
-	go myqcl.Sampler(test, cs, "/dev/ttyUSB0")
+	go myqcl.Sampler(test, cs, "/dev/")
 
-	mylicor := li820.NewLicor("li820", "qcl", "/dev/ttyUSB1")
+	mylicor := li820.NewLicor("li820", "qcl", "/dev/licor")
 	co2 = make(chan li820.Datum)
 	if test {
 		go mylicor.TestSampler(co2)
