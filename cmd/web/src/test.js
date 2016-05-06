@@ -120,7 +120,7 @@ var App = React.createClass({
     jQuery.ajax({
       type: "POST",
       url: "/record",
-      data: JSON.stringify({"plot": this.state.plot, "height": this.state.height}),
+      data: JSON.stringify({"plot": this.state.plot, "height": this.state.height.toString()}),
       dataType: 'json'
     });
     this.setState({recording: true,

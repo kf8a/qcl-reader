@@ -56,9 +56,9 @@ var Result =  React.createClass({
         <div className="row">
         <div className="col-md-6 col-sm-6 col-xs-6">
         <ul className='flux list-unstyled'>
-        <li>CO2: { Math.round((this.props.co2 * 1000)/1000) }</li>
-        <li>N2O: { Math.round((this.props.n2o * 1000)/1000) }</li>
-        <li>CH4: { Math.round((this.props.ch4 * 1000)/1000) }</li>
+        <li>CO2: { this.props.co2 }</li>
+        <li>N2O: { this.props.n2o }</li>
+        <li>CH4: { this.props.ch4 }</li>
         </ul>
         </div>
         <div className="col-md-3 col-sm-3 col-xs-3">
