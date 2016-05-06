@@ -128,14 +128,7 @@ var App = React.createClass({
   },
 
   updateHeight: function(event) {
-    var height = event.target.value;
-    console.log(height.length);
-    console.log(height);
-    // var RE = /^-{0,1}\d*\.{0,1}\d+$/;
-    // if (RE.test(height)) {
-    if ((!isNaN(parseFloat(height)) && isFinite(height) ) ) {
-      this.setState({height: height});
-    }
+    this.setState({height: event.target.value});
   },
 
   updatePlot: function(plot) {
