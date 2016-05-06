@@ -18,7 +18,7 @@ var App = React.createClass({
       ch4_intercept: 0,
       now: new Date(),
       height: 0,
-      plot: "F80-s-28d"
+      plot: "T1R1"
     };
   },
 
@@ -54,12 +54,10 @@ var App = React.createClass({
         data={this.state.ch4} />
         </div>
         <div className="row">
-      <Result
+      <Result 
         handleRecord={this.handleRecord}
         handleSave={this.handleSave}
         handleCancel={this.handleCancel}
-        updatePlot={this.updatePlot}
-        updateHeight={this.updateHeight}
         recording={this.state.recording}
         n2o={this.state.n2o_flux}
         co2={this.state.co2_flux}
@@ -95,15 +93,7 @@ var App = React.createClass({
     jQuery.ajax({
       type: "POST",
       url: "/save",
-      data: JSON.stringify({"co2": this.state.co2, 
-                           "ch4": this.state.ch4, 
-                           "n2o": this.state.n2o,
-                           "co2_flux": this.state.co2_flux,
-                           "n2o_flux": this.state.n2o_flux,
-                           "ch4_flux": this.state.ch4_flux,
-                           "co2_intercept": this.state.co2_intercept,
-                           "n2o_intercept": this.state.n2o_intercept,
-                           "ch4_intercept": this.state.ch4_intercept }),
+      data: JSON.stringify({"co2": this.state.co2, "ch4": this.state.ch4, "n2o": this.state.n2o}),
       dataType: 'json'
     });
 
@@ -125,21 +115,6 @@ var App = React.createClass({
     });
     this.setState({recording: true,
                   now: new Date()})
-  },
-
-  updateHeight: function(event) {
-    var height = event.target.value;
-    console.log(height.length);
-    console.log(height);
-    // var RE = /^-{0,1}\d*\.{0,1}\d+$/;
-    // if (RE.test(height)) {
-    if ((!isNaN(parseFloat(height)) && isFinite(height) ) ) {
-      this.setState({height: height});
-    }
-  },
-
-  updatePlot: function(plot) {
-    this.setState({plot: plot});
   },
 
   prepareData: function(datum) {
