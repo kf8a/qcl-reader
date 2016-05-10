@@ -33,6 +33,7 @@ var LocationSelect = React.createClass({
     <option value="F85-d-14d">F85-d-14d</option>
     <option value="F85-d-28d">F85-d-28d</option>
     <option value="F85-d-0d">F85-d-0d</option>
+    <option value="F85-d-0d">F85-d-0d</option>
     </select>
     </div>
     )
