@@ -96,6 +96,9 @@ func (qcl QCL) RealSampler(cs chan Datum, connection_string string) {
 				log.Println(err)
 				continue
 			}
+
+			log.Println(line)
+
 			if len(line) < 10 {
 				log.Println("short line", line)
 				continue
