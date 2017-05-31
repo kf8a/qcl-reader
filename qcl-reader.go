@@ -26,13 +26,13 @@ type Datum struct {
 	N2O_dry_ppm float64
 }
 
-func (qcl QCL) parseFloat(value string) (float64, error)  {
-	number, err := strconv.ParseFloat(strings.Trim(value, " "), 64)
+func (qcl QCL) parseFloat(value string) (number float64, err error)  {
+	number, err = strconv.ParseFloat(strings.Trim(value, " "), 64)
 	if err != nil {
 		log.Print(err)
-    return err
+    return
 	} else {
-		return number
+		return
 	}
 }
 
@@ -103,7 +103,8 @@ func (qcl QCL) RealSampler(cs chan Datum, connection_string string) {
 				log.Println("short line", line)
 				continue
 			}
-      ch_ppm, err := qcl.parseFloat(line[1])
+
+      ch4_ppm, err := qcl.parseFloat(line[1])
       if err != nil {
         continue
       }
@@ -132,11 +133,11 @@ func (qcl QCL) RealSampler(cs chan Datum, connection_string string) {
 				ObsTime:     time.Now(),
 				Time:        qcl.parseTime(line[0]),
 				CH4_ppm:     ch4_ppm,
-				H2O_ppm:     h2p_ppm,
+				H2O_ppm:     h2o_ppm,
 				N2O_ppm:     n2o_ppm,
 				CO2_ppm:     0,
 				N2O_dry_ppm: n2o_dry_ppm,
-				CH4_dry_ppm: ch4_dry_ppm
+				CH4_dry_ppm: ch4_dry_ppm,
 			}
 
 			// log.Println(datum)
