@@ -26,11 +26,11 @@ type Datum struct {
 	N2O_dry_ppm float64
 }
 
-func (qcl QCL) parseFloat(value string) float64 {
+func (qcl QCL) parseFloat(value string) (float64, error)  {
 	number, err := strconv.ParseFloat(strings.Trim(value, " "), 64)
 	if err != nil {
 		log.Print(err)
-		return 0
+    return err
 	} else {
 		return number
 	}
@@ -83,37 +83,63 @@ func (qcl QCL) RealSampler(cs chan Datum, connection_string string) {
 
 		if err != nil {
 			log.Println(err)
-			time.Sleep(2 * time.Second)
-			continue
 		}
 		defer port.Close()
 		qcl.port = port
 
+		reader := csv.NewReader(qcl.port)
 		for {
-			reader := csv.NewReader(qcl.port)
 			line, err := reader.Read()
+			// log.Println(line)
 			if err != nil {
-				log.Println(err)
-				continue
+				if err, ok := err.(*csv.ParseError); ok && err.Err == csv.ErrFieldCount {
+				} else {
+					log.Println(err)
+					continue
+				}
 			}
-
-			log.Println(line)
 
 			if len(line) < 10 {
 				log.Println("short line", line)
 				continue
 			}
+      ch_ppm, err := qcl.parseFloat(line[1])
+      if err != nil {
+        continue
+      }
+
+      h2o_ppm, err :=  qcl.parseFloat(line[3])
+      if err != nil {
+        continue
+      }
+
+      n2o_ppm, err :=  qcl.parseFloat(line[5])
+      if err != nil {
+        continue
+      }
+
+			n2o_dry_ppm, err :=  qcl.parseFloat(line[7])
+      if err != nil {
+        continue
+      }
+
+		  ch4_dry_ppm, err := qcl.parseFloat(line[9])
+      if err != nil {
+        continue
+      }
+
 			datum := Datum{
 				ObsTime:     time.Now(),
 				Time:        qcl.parseTime(line[0]),
-				CH4_ppm:     qcl.parseFloat(line[1]),
-				H2O_ppm:     qcl.parseFloat(line[3]),
-				N2O_ppm:     qcl.parseFloat(line[5]),
-				CO2_ppm:     qcl.parseFloat("0"),
-				N2O_dry_ppm: qcl.parseFloat(line[7]),
-				CH4_dry_ppm: qcl.parseFloat(line[9]),
+				CH4_ppm:     ch4_ppm,
+				H2O_ppm:     h2p_ppm,
+				N2O_ppm:     n2o_ppm,
+				CO2_ppm:     0,
+				N2O_dry_ppm: n2o_dry_ppm,
+				CH4_dry_ppm: ch4_dry_ppm
 			}
 
+			// log.Println(datum)
 			cs <- datum
 		}
 	}
