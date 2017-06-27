@@ -197,7 +197,7 @@ var App = React.createClass({
     }
 
     lr['slope'] = (n * sum_xy - sum_x * sum_y) / (n*sum_xx - sum_x * sum_x);
-    lr['intercept'] = (sum_y - lr.slope * sum_x)/n;
+    lr['intercept'] = (sum_y/n - lr['slope'] * sum_x)/n;
     lr['r2'] = Math.pow((n*sum_xy - sum_x*sum_y)/Math.sqrt((n*sum_xx-sum_x*sum_x)*(n*sum_yy-sum_y*sum_y)),2);
 
     return lr;

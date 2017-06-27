@@ -76,7 +76,7 @@ var Result =  React.createClass({
         <li>CO2: { this.props.co2 }</li>
         <li>N2O: { this.props.n2o }</li>
         <li>CH4: { this.props.ch4 }</li>
-        <li>N2O Doubling time: {this.props.n2o_intercept/this.props.n2o/60} min</li>
+        <li>N2O Doubling time: {this.props.n2o_intercept/ this.props.n2o} sec</li>
         </ul>
         </div>
         <div className="col-md-3 col-sm-3 col-xs-3">
