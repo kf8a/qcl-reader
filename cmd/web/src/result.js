@@ -9,51 +9,47 @@ var LocationSelect = React.createClass({
     <div className="form-group">
     <label for="location">Location</label>
     <select className="location form-control input-lg" value={ this.props.value } onChange={this.handleChange} >
-    <option value='F1-SS-1'>F1-SS1</option>
-    <option value='F1-SQ-1'>F1-SS1</option>
-    <option value='F9-SS-1'>F1-SS1</option>
-    <option value='F9-SQ-1'>F1-SS1</option>
-    <option value='F1-SS-2'>F1-SS2</option>
-    <option value='F1-SQ-2'>F1-SS2</option>
-    <option value='F9-SS-2'>F1-SS2</option>
-    <option value='F9-SQ-2'>F1-SS2</option>
-    <option value='F1-SS-3'>F1-SS3</option>
-    <option value='F1-SQ-3'>F1-SS3</option>
-    <option value='F9-SS-3'>F1-SS3</option>
-    <option value='F9-SQ-3'>F1-SS3</option>
-    <option value='F1-SS-4'>F1-SS4</option>
-    <option value='F1-SQ-4'>F1-SS4</option>
-    <option value='F9-SS-4'>F1-SS4</option>
-    <option value='F9-SQ-4'>F1-SS4</option>
-    <option value='F1-SS-5'>F1-SS5</option>
-    <option value='F1-SQ-5'>F1-SS5</option>
-    <option value='F9-SS-5'>F1-SS5</option>
-    <option value='F9-SQ-5'>F1-SS5</option>'
-    <option value="F80-s-2d">F80-s-2d</option>
-    <option value="F80-s-14d">F80-s-14d</option>
-    <option value="F80-s-28d">F80-s-28d</option>
-    <option value="F80-s-0d">F80-s-0d</option>
-    <option value="F80-d-2d">F80-d-2d</option>
-    <option value="F80-d-14d">F80-d-14d</option>
-    <option value="F80-d-28d">F80-d-28d</option>
-    <option value="F80-d-0d">F80-d-0d</option>
-    <option value="F83-s-2d">F83-s-2d</option>
-    <option value="F83-s-14d">F83-s-14d</option>
-    <option value="F83-s-28d">F83-s-28d</option>
-    <option value="F83-s-0d">F83-s-0d</option>
-    <option value="F83-d-2d">F83-d-2d</option>
-    <option value="F83-d-14d">F83-d-14d</option>
-    <option value="F83-d-28d">F83-d-28d</option>
-    <option value="F83-d-0d">F83-d-0d</option>
-    <option value="F85-s-2d">F85-s-2d</option>
-    <option value="F85-s-14d">F85-s-14d</option>
-    <option value="F85-s-28d">F85-s-28d</option>
-    <option value="F85-s-0d">F85-s-0d</option>
-    <option value="F85-d-2d">F85-d-2d</option>
-    <option value="F85-d-14d">F85-d-14d</option>
-    <option value="F85-d-28d">F85-d-28d</option>
-    <option value="F85-d-0d">F85-d-0d</option>
-    <option value="F85-d-0d">F85-d-0d</option>
+
+<option value="1r1-2d">"1r1-2d"</option>
+<option value="G1r1-7d">"G1r1-7d"</option>
+<option value="G1r1-14d">"G1r1-14d"</option>
+<option value="G1r1-28d">"G1r1-28d"</option>
+<option value="G1r2-2d">"G1r2-2d"</option>
+<option value="G1r2-7d">"G1r2-7d"</option>
+<option value="G1r2-14d">"G1r2-14d"</option>
+<option value="G1r2-28d">"G1r2-28d"</option>
+<option value="G1r3-2d">"G1r3-2d"</option>
+<option value="G1r3-7d">"G1r3-7d"</option>
+<option value="G1r3-14d">"G1r3-14d"</option>
+<option value="G1r3-28d">"G1r3-28d"</option>
+<option value="G1r4-2d">"G1r4-2d"</option>
+<option value="G1r4-7d">"G1r4-7d"</option>
+<option value="G1r4-14d">"G1r4-14d"</option>
+<option value="G1r4-28d">"G1r4-28d"</option>
+<option value="G1r5-2d">"G1r5-2d"</option>
+<option value="G1r5-7d">"G1r5-7d"</option>
+<option value="G1r5-14d">"G1r5-14d"</option>
+<option value="G1r5-28d">"G1r5-28d"</option>
+<option value="G5r1-2d">"G5r1-2d"</option>
+<option value="G5r1-7d">"G5r1-7d"</option>
+<option value="G5r1-14d">"G5r1-14d"</option>
+<option value="G5r1-28d">"G5r1-28d"</option>
+<option value="G5r2-2d">"G5r2-2d"</option>
+<option value="G5r2-7d">"G5r2-7d"</option>
+<option value="G5r2-14d">"G5r2-14d"</option>
+<option value="G5r2-28d">"G5r2-28d"</option>
+<option value="G5r3-2d">"G5r3-2d"</option>
+<option value="G5r3-7d">"G5r3-7d"</option>
+<option value="G5r3-14d">"G5r3-14d"</option>
+<option value="G5r3-28d">"G5r3-28d"</option>
+<option value="G5r4-2d">"G5r4-2d"</option>
+<option value="G5r4-7d">"G5r4-7d"</option>
+<option value="G5r4-14d">"G5r4-14d"</option>
+<option value="G5r4-28d">"G5r4-28d"</option>
+<option value="G5r5-2d">"G5r5-2d"</option>
+<option value="G5r5-7d">"G5r5-7d"</option>
+<option value="G5r5-14d">"G5r5-14d"</option>
+<option value="G6r5-28d">"G5r5-28d"</option>
     </select>
     </div>
     )
@@ -80,6 +76,7 @@ var Result =  React.createClass({
         <li>CO2: { this.props.co2 }</li>
         <li>N2O: { this.props.n2o }</li>
         <li>CH4: { this.props.ch4 }</li>
+        <li>N2O Doubling time: {this.props.n2o_intercept/this.props.n2o/60} min</li>
         </ul>
         </div>
         <div className="col-md-3 col-sm-3 col-xs-3">

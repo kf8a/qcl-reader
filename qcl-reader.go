@@ -93,6 +93,8 @@ func (qcl QCL) RealSampler(cs chan Datum, connection_string string) {
 			// log.Println(line)
 			if err != nil {
 				if err, ok := err.(*csv.ParseError); ok && err.Err == csv.ErrFieldCount {
+					log.Println(err)
+					continue
 				} else {
 					log.Println(err)
 					continue

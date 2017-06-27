@@ -5,7 +5,7 @@
 
 var App = React.createClass({
   getInitialState: function() {
-    return { 
+    return {
       ch4: [],
       n2o: [],
       co2: [],
@@ -30,7 +30,7 @@ var App = React.createClass({
     return (
       <div className="flux">
       <div className="row">
-      <Chart 
+      <Chart
         now={ this.state.now}
         slope={this.state.co2_flux}
         intercept={this.state.co2_intercept}
@@ -38,15 +38,15 @@ var App = React.createClass({
         data={this.state.co2} />
         </div>
         <div className="row">
-      <Chart 
-        now={this.state.now} 
+      <Chart
+        now={this.state.now}
         slope={this.state.n2o_flux}
         intercept={this.state.n2o_intercept}
         recording={this.state.recording}
         data={this.state.n2o} />
         </div>
         <div className="row">
-      <Chart 
+      <Chart
         now={this.state.now }
         slope={this.state.ch4_flux}
         intercept={this.state.ch4_intercept}
@@ -64,6 +64,7 @@ var App = React.createClass({
         n2o={this.state.n2o_flux}
         co2={this.state.co2_flux}
         ch4={this.state.ch4_flux}
+        n2o_intercept={this.state.n2o_intercept}
         height={this.state.height}
         plot={this.state.plot}
         />
@@ -95,8 +96,8 @@ var App = React.createClass({
     jQuery.ajax({
       type: "POST",
       url: "/save",
-      data: JSON.stringify({"co2": this.state.co2, 
-                           "ch4": this.state.ch4, 
+      data: JSON.stringify({"co2": this.state.co2,
+                           "ch4": this.state.ch4,
                            "n2o": this.state.n2o,
                            "co2_flux": this.state.co2_flux,
                            "n2o_flux": this.state.n2o_flux,
@@ -149,7 +150,7 @@ var App = React.createClass({
       };
 
       this.setState({ co2: this.state.co2,
-                    ch4: this.state.ch4, 
+                    ch4: this.state.ch4,
                     n2o: this.state.n2o});
   },
 
@@ -158,9 +159,9 @@ var App = React.createClass({
     var n2o_flux = this.computeFlux(this.state.n2o);
     var co2_flux = this.computeFlux(this.state.co2);
     var ch4_flux = this.computeFlux(this.state.ch4);
-    this.setState({n2o_flux: n2o_flux['slope'], 
+    this.setState({n2o_flux: n2o_flux['slope'],
                   n2o_intercept: n2o_flux['intercept'],
-                  co2_flux: co2_flux['slope'], 
+                  co2_flux: co2_flux['slope'],
                   co2_intercept: co2_flux['intercept'],
                   ch4_flux: ch4_flux['slope'],
                   ch4_intercept: ch4_flux['intercept']});
@@ -193,7 +194,7 @@ var App = React.createClass({
       sum_xy += (x[i]*y[i]);
       sum_xx += (x[i]*x[i]);
       sum_yy += (y[i]*y[i]);
-    } 
+    }
 
     lr['slope'] = (n * sum_xy - sum_x * sum_y) / (n*sum_xx - sum_x * sum_x);
     lr['intercept'] = (sum_y - lr.slope * sum_x)/n;
@@ -223,7 +224,7 @@ var socketService = new SocketService({
 });
 
 React.render(
-  < App socketService={socketService} />, 
+  < App socketService={socketService} />,
   document.getElementById('example')
 )
 
