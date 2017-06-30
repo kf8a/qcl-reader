@@ -10,7 +10,7 @@ var LocationSelect = React.createClass({
     <label for="location">Location</label>
     <select className="location form-control input-lg" value={ this.props.value } onChange={this.handleChange} >
 
-<option value="1r1-2d">"1r1-2d"</option>
+<option value="G1r1-2d">"G1r1-2d"</option>
 <option value="G1r1-7d">"G1r1-7d"</option>
 <option value="G1r1-14d">"G1r1-14d"</option>
 <option value="G1r1-28d">"G1r1-28d"</option>
@@ -49,7 +49,7 @@ var LocationSelect = React.createClass({
 <option value="G5r5-2d">"G5r5-2d"</option>
 <option value="G5r5-7d">"G5r5-7d"</option>
 <option value="G5r5-14d">"G5r5-14d"</option>
-<option value="G6r5-28d">"G5r5-28d"</option>
+<option value="G5r5-28d">"G5r5-28d"</option>
     </select>
     </div>
     )
@@ -77,6 +77,7 @@ var Result =  React.createClass({
         <li>N2O: { this.props.n2o }</li>
         <li>CH4: { this.props.ch4 }</li>
         <li>N2O Doubling time: {this.props.n2o_intercept/ this.props.n2o} sec</li>
+        <li>N2O Time to 800ppb: {(.8 - this.props.n2o_intercept)/this.props.n2o_slope/60} sec</li>
         </ul>
         </div>
         <div className="col-md-3 col-sm-3 col-xs-3">
