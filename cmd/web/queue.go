@@ -96,8 +96,8 @@ func publish(key string, message []byte) error {
 			ContentType:     "text/plain",
 			ContentEncoding: "",
 			Body:            message,
-			DeliveryMode:    amqp.Transient, // 1=non-persistent, 2=persistent
-			Priority:        0,              // 0-9
+			DeliveryMode:    amqp.Persistent, // 1=non-persistent, 2=persistent
+			Priority:        0,               // 0-9
 			// a bunch of application/implementation-specific fields
 		},
 	); err != nil {
